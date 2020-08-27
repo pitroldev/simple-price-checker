@@ -2,6 +2,11 @@ const axios = require("axios");
 const cheerio = require("cheerio");
 const parser = require("../utils/parser");
 
+function errorDump(html) {
+  const fs = require("fs");
+  fs.appendFile("err.html", html, () => {});
+}
+
 module.exports = {
   async searchKabum(item, uri) {
     try {
@@ -24,10 +29,16 @@ module.exports = {
         return { ...itemObject, indisponivel };
       }
 
-      itemObject.promoPrice = parser.parsePrice(
-        $("span.preco_desconto span strong").text()
-      );
-      itemObject.normalPrice = parser.parsePrice($("div.preco_normal").text());
+      const contador = !!$(".contTEXTO").text();
+
+      const promoString = contador
+        ? ".preco_desconto_avista-cm"
+        : "span.preco_desconto span strong";
+
+      const normalString = contador ? ".preco_desconto-cm" : "div.preco_normal";
+
+      itemObject.promoPrice = parser.parsePrice($(promoString).text());
+      itemObject.normalPrice = parser.parsePrice($(normalString).text());
 
       return itemObject;
     } catch (err) {

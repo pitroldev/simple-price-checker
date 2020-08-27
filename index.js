@@ -5,7 +5,6 @@ const Yeelight = require("yeelight2");
 const config = require("./config.json");
 const search = require("./services/search");
 const parser = require("./utils/parser");
-const { searchKalunga } = require("./services/search");
 
 function checkURL(item) {
   const { uri_array } = item;
@@ -34,7 +33,7 @@ function checkURL(item) {
         return log(itemObject);
       }
       default:
-        console.error("URL DESCONHECIDA", url);
+        console.error("[UNSUPPORTED_URL]:", url);
     }
   });
 }
@@ -94,15 +93,7 @@ function log(item) {
 }
 
 function notify(item) {
-  const {
-    promoPrice,
-    normalPrice,
-    targetPrice,
-    checkedTime,
-    name,
-    loja,
-    uri,
-  } = item;
+  const { promoPrice, normalPrice, checkedTime, name, loja, uri } = item;
 
   turnLightsGreen();
   openBrowser(uri);
@@ -112,7 +103,7 @@ function notify(item) {
 
   const logString = `[${parser.parseTime(
     checkedTime
-  )}]: ${name}\nLoja: ${loja}\nPreço Normal: ${normalString}\nPreço Promocional: ${promoString}\n`;
+  )}]: ${name}\nLoja: ${loja}\nPreço Normal: ${normalString}\nPreço Promocional: ${promoString}\nURI: ${uri}`;
 
   fs.appendFile(
     "GoodPrices.txt",
@@ -157,9 +148,9 @@ function main() {
   return setInterval(() => items.map(checkURL), intervalTime);
 }
 
-main();
+// main();
 
-// search.searchAmazon(
-//   { name: "Debug Test", targetPrice: 9999 },
-//   config.items[0].uri_array[0]
-// );
+search.searchKabum(
+  { name: "Debug Test", targetPrice: 9999 },
+  config.items[0].uri_array[0]
+);
