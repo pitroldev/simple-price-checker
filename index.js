@@ -52,15 +52,15 @@ function log(item) {
     } = item;
 
     if (error || promoPrice < 0 || normalPrice < 0) {
-      const errorString = `[SEARCH_ERROR]: ${name}\nLoja: ${loja}\nErro ao procurar Produto\n`;
+      const errorString = `[SEARCH_ERROR]: ${name}\nLoja: ${loja}\nErro ao procurar Produto`;
 
       fs.appendFile(
         "log.txt",
-        "\n" + errorString,
+        "\n" + errorString + "\n",
         (err) => err && console.log("log.txt", err)
       );
 
-      return console.log(`\n\x1b[1m\x1b[41m${errorString}\x1b[0m`);
+      return console.log(`\n\x1b[1m\x1b[41m${errorString}\x1b[0m\n`);
     }
 
     if (promoPrice < targetPrice || normalPrice < targetPrice) {
@@ -135,15 +135,15 @@ async function turnLightsGreen() {
 }
 
 function main() {
+  const { intervalMinutes, items } = config;
+
   console.log(
     "\n\x1b[1m",
     "\x1b[47m",
     "\x1b[30m",
-    "SIMPLE PRICE CHECKER STARTED",
+    `SIMPLE PRICE CHECKER STARTED - ${intervalMinutes}min Interval`,
     "\x1b[0m\n"
   );
-
-  const { intervalMinutes, items } = config;
 
   const intervalTime = intervalMinutes * 1000 * 60;
 

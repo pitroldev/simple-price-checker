@@ -28,7 +28,7 @@ module.exports = {
     try {
       const Time = `${date.getDate()}/${
         date.getMonth() + 1
-      }/${date.getFullYear()} - ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+      }/${date.getFullYear()} - ${date.toTimeString().split(" ")[0]}`;
 
       return Time;
     } catch (err) {
