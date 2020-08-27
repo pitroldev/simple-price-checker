@@ -60,7 +60,7 @@ function log(item) {
         (err) => err && console.log("log.txt", err)
       );
 
-      return console.log(errorString);
+      return console.log(`\n\x1b[1m\x1b[41m${errorString}\x1b[0m`);
     }
 
     if (promoPrice < targetPrice || normalPrice < targetPrice) {
@@ -76,17 +76,25 @@ function log(item) {
       ? "\nProduto Indisponível"
       : `\nPreço Ideal: R$${targetPrice}`;
 
-    const logString = `[${parser.parseTime(
+    const disponivelStyle = indisponivel ? "\x1b[41m\x1b[37m" : "";
+
+    const consoleString = `[${parser.parseTime(
+      checkedTime
+    )}]: ${name}\x1b[1m\x1b[47m\x1b[30m\nLoja: ${loja}\x1b[43m${normalString}${promoString}${
+      disponivelStyle + disponivelString
+    }\x1b[0m\n`;
+
+    const logString = `\n[${parser.parseTime(
       checkedTime
     )}]: ${name}\nLoja: ${loja}${disponivelString}${normalString}${promoString}\n`;
 
     fs.appendFile(
       "log.txt",
-      "\n" + logString,
+      logString,
       (err) => err && console.log("log.txt", err)
     );
 
-    console.log(logString);
+    console.log(consoleString);
   } catch (err) {
     console.log("logging error", err);
   }
@@ -98,12 +106,12 @@ function notify(item) {
   turnLightsGreen();
   openBrowser(uri);
 
-  const promoString = promoPrice ? `R$${promoPrice}` : "Não Encontrado";
-  const normalString = normalPrice ? ` R$${normalPrice}` : "Não Encontrado";
+  const promoString = promoPrice ? `\nPreço Promocional: R$${promoPrice}` : "";
+  const normalString = normalPrice ? `\nPreço Normal: R$${normalPrice}` : "";
 
   const logString = `[${parser.parseTime(
     checkedTime
-  )}]: ${name}\nLoja: ${loja}\nPreço Normal: ${normalString}\nPreço Promocional: ${promoString}\nURI: ${uri}`;
+  )}]: ${name}\nLoja: ${loja}${normalString}${promoString}\nURI: ${uri}`;
 
   fs.appendFile(
     "GoodPrices.txt",
