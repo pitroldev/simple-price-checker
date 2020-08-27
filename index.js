@@ -49,7 +49,20 @@ function log(item) {
       name,
       indisponivel,
       loja,
+      error,
     } = item;
+
+    if (error || promoPrice < 0 || normalPrice < 0) {
+      const errorString = `[SEARCH_ERROR]: ${name}\nLoja: ${loja}\nErro ao procurar Produto\n`;
+
+      fs.appendFile(
+        "log.txt",
+        "\n" + errorString,
+        (err) => err && console.log("log.txt", err)
+      );
+
+      return console.log(errorString);
+    }
 
     if (promoPrice < targetPrice || normalPrice < targetPrice) {
       return notify(item);
@@ -61,7 +74,7 @@ function log(item) {
     const normalString = normalPrice ? `\nPreço Normal: R$${normalPrice}` : "";
 
     const disponivelString = indisponivel
-      ? "\nIndisponível"
+      ? "\nProduto Indisponível"
       : `\nPreço Ideal R$${targetPrice}`;
 
     const logString = `[${parser.parseTime(
@@ -140,6 +153,7 @@ function main() {
     return items.map(checkURL);
   }
 
+  items.map(checkURL);
   return setInterval(() => items.map(checkURL), intervalTime);
 }
 
@@ -147,5 +161,5 @@ main();
 
 // search.searchAmazon(
 //   { name: "Debug Test", targetPrice: 9999 },
-//   config.items[3].uri_array[0]
+//   config.items[0].uri_array[0]
 // );

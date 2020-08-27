@@ -8,7 +8,7 @@ module.exports = {
 
       return floatNumber;
     } catch (err) {
-      console.log("parsePrice", err);
+      return -1;
     }
   },
 

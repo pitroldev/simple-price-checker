@@ -31,7 +31,13 @@ module.exports = {
 
       return itemObject;
     } catch (err) {
-      console.log("searchKabum", err);
+      return {
+        ...item,
+        loja: "Kabum",
+        error: true,
+        checkedtime: new Date(),
+        err,
+      };
     }
   },
 
@@ -65,7 +71,13 @@ module.exports = {
 
       return itemObject;
     } catch (err) {
-      console.log("searchAmazon", err);
+      return {
+        ...item,
+        loja: "Amazon",
+        error: true,
+        checkedtime: new Date(),
+        err,
+      };
     }
   },
 
@@ -94,7 +106,13 @@ module.exports = {
 
       return itemObject;
     } catch (err) {
-      console.log("searchTerabyte", err);
+      return {
+        ...item,
+        loja: "Pichau",
+        error: true,
+        checkedtime: new Date(),
+        err,
+      };
     }
   },
 
@@ -125,7 +143,13 @@ module.exports = {
 
       return itemObject;
     } catch (err) {
-      console.log("searchFast", err);
+      return {
+        ...item,
+        loja: "Fast Shop",
+        error: true,
+        checkedtime: new Date(),
+        err,
+      };
     }
   },
 
@@ -154,7 +178,13 @@ module.exports = {
 
       return itemObject;
     } catch (err) {
-      console.log("searchKabum", err);
+      return {
+        ...item,
+        loja: "Kalunga",
+        error: true,
+        checkedtime: new Date(),
+        err,
+      };
     }
   },
 };
