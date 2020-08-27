@@ -21,8 +21,9 @@ function checkURL(item) {
         return log(itemObject);
       }
       case "www.fastshop.com.br": {
-        const itemObject = await search.searchFast(item, uri);
-        return log(itemObject);
+        // const itemObject = await search.searchFast(item, uri);
+        // return log(itemObject);
+        return;
       }
       default:
         console.error("URL DESCONHECIDA", url);
@@ -107,19 +108,19 @@ async function turnLightsGreen() {
 }
 
 function main() {
-  console.log("\nSIMPLE PRICE CHECKER STARTED\n");
+  console.log(
+    "\n\x1b[1m",
+    "\x1b[47m",
+    "\x1b[30m",
+    "SIMPLE PRICE CHECKER STARTED",
+    "\x1b[0m\n"
+  );
+
   const { intervalMinutes, items } = config;
 
   const intervalTime = intervalMinutes * 1000 * 60;
 
-  items.map((item) => {
-    checkURL(item);
-    setInterval(() => {
-      checkURL(item);
-    }, intervalTime);
-  });
+  setInterval(() => items.map(checkURL), intervalTime);
 }
 
 main();
-// checkURL(config.items[0]);
-// turnLightsGreen();
