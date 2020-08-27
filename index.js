@@ -74,7 +74,7 @@ function log(item) {
 
     const disponivelString = indisponivel
       ? "\nProduto Indisponível"
-      : `\nPreço Ideal R$${targetPrice}`;
+      : `\nPreço Ideal: R$${targetPrice}`;
 
     const logString = `[${parser.parseTime(
       checkedTime
@@ -108,7 +108,7 @@ function notify(item) {
   fs.appendFile(
     "GoodPrices.txt",
     "\n" + logString,
-    (err) => err && console.log("GoodPrices.txt", err)
+    (err) => err && console.log("goodPrices.txt", err)
   );
 
   return console.log("\x1b[1m\x1b[45m\x1b[37m%s\x1b[0m", logString);
@@ -148,9 +148,9 @@ function main() {
   return setInterval(() => items.map(checkURL), intervalTime);
 }
 
-// main();
+main();
 
-search.searchKabum(
-  { name: "Debug Test", targetPrice: 9999 },
-  config.items[0].uri_array[0]
-);
+// search.searchKabum(
+//   { name: "Debug Test", targetPrice: 9999 },
+//   config.items[0].uri_array[0]
+// );
