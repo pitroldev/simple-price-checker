@@ -1,0 +1,17 @@
+{
+  "name": "simple-price-checker",
+  "version": "1.0.0",
+  "description": "Programa feito para checar preços periodicamente e notificar quando encontrar algum abaixo do informado.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Petro Cardoso",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.20.0",
+    "cheerio": "^1.0.0-rc.3",
+    "opn": "^6.0.0",
+    "yeelight2": "^1.3.7"
+  }
+}

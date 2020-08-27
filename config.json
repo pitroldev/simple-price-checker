@@ -1,0 +1,17 @@
+{
+  "items": [
+    {
+      "name": "EXAMPLE EXAMPLE_ITEM_1",
+      "uri_array": ["WWW.URI1.COM/EXAMPLE1", "WWW.URI2.COM/EXAMPLE2"],
+      "targetPrice": 1000
+    },
+    {
+      "name": "EXAMPLE_ITEM_2",
+      "uri_array": ["WWW.URI1.COM/EXAMPLE2", "WWW.URI2.COM/EXAMPLE3"],
+      "targetPrice": 1000
+    }
+  ],
+  "intervalMinutes": 10,
+  "yeelightIP": "INSERT_YOUR_YEELIGHT_IP_HERE",
+  "yeelightPort": "INSERT_YOUR_YEELIGHT_PORT_HERE"
+}
