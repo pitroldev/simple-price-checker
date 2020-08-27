@@ -4,7 +4,8 @@
   "description": "Programa feito para checar preços periodicamente e notificar quando encontrar algum abaixo do informado.",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev": "set NODE_ENV=debug && node index.js"
   },
   "author": "Petro Cardoso",
   "license": "MIT",

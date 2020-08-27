@@ -36,4 +36,14 @@ module.exports = {
       return date;
     }
   },
+
+  parseFastShopPartNumber(uri) {
+    try {
+      const regex = /([A-Z])\w+/g;
+
+      return regex.exec(uri)[0];
+    } catch (err) {
+      console.log("parseFastShopPartNumber", err);
+    }
+  },
 };

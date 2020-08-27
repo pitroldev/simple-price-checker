@@ -5,6 +5,7 @@ const Yeelight = require("yeelight2");
 const config = require("./config.json");
 const search = require("./services/search");
 const parser = require("./utils/parser");
+const { searchKalunga } = require("./services/search");
 
 function checkURL(item) {
   const { uri_array } = item;
@@ -20,10 +21,17 @@ function checkURL(item) {
         const itemObject = await search.searchAmazon(item, uri);
         return log(itemObject);
       }
+      case "www.pichau.com.br": {
+        const itemObject = await search.searchPichau(item, uri);
+        return log(itemObject);
+      }
       case "www.fastshop.com.br": {
-        // const itemObject = await search.searchFast(item, uri);
-        // return log(itemObject);
-        return;
+        const itemObject = await search.searchFastShop(item, uri);
+        return log(itemObject);
+      }
+      case "www.kalunga.com.br": {
+        const itemObject = await search.searchKalunga(item, uri);
+        return log(itemObject);
       }
       default:
         console.error("URL DESCONHECIDA", url);
@@ -39,6 +47,7 @@ function log(item) {
       targetPrice,
       checkedTime,
       name,
+      indisponivel,
       loja,
     } = item;
 
@@ -46,12 +55,18 @@ function log(item) {
       return notify(item);
     }
 
-    const promoString = promoPrice ? `R$${promoPrice}` : "Não Encontrado";
-    const normalString = normalPrice ? ` R$${normalPrice}` : "Não Encontrado";
+    const promoString = promoPrice
+      ? `\nPreço Promocional: R$${promoPrice}`
+      : "";
+    const normalString = normalPrice ? `\nPreço Normal: R$${normalPrice}` : "";
+
+    const disponivelString = indisponivel
+      ? "\nIndisponível"
+      : `\nPreço Ideal R$${targetPrice}`;
 
     const logString = `[${parser.parseTime(
       checkedTime
-    )}]: ${name}\nLoja: ${loja}\nPreço Normal: ${normalString}\nPreço Promocional: ${promoString}\nPreço Ideal R$${targetPrice}\n`;
+    )}]: ${name}\nLoja: ${loja}${disponivelString}${normalString}${promoString}\n`;
 
     fs.appendFile(
       "log.txt",
@@ -120,7 +135,17 @@ function main() {
 
   const intervalTime = intervalMinutes * 1000 * 60;
 
-  setInterval(() => items.map(checkURL), intervalTime);
+  if (process.env.NODE_ENV) {
+    console.log("IN DEBUG MODE");
+    return items.map(checkURL);
+  }
+
+  return setInterval(() => items.map(checkURL), intervalTime);
 }
 
 main();
+
+// search.searchAmazon(
+//   { name: "Debug Test", targetPrice: 9999 },
+//   config.items[3].uri_array[0]
+// );
