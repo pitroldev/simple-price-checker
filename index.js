@@ -6,6 +6,8 @@ const config = require("./config.json");
 const search = require("./services/search");
 const parser = require("./utils/parser");
 
+const TempPricesArray = [];
+
 function checkURL(item) {
   const { uri_array } = item;
 
@@ -14,23 +16,35 @@ function checkURL(item) {
     switch (url) {
       case "www.kabum.com.br": {
         const itemObject = await search.searchKabum(item, uri);
-        return log(itemObject);
+        return handleLog(itemObject);
       }
       case "www.amazon.com.br": {
         const itemObject = await search.searchAmazon(item, uri);
-        return log(itemObject);
+        return handleLog(itemObject);
       }
       case "www.pichau.com.br": {
         const itemObject = await search.searchPichau(item, uri);
-        return log(itemObject);
+        return handleLog(itemObject);
       }
       case "www.fastshop.com.br": {
         const itemObject = await search.searchFastShop(item, uri);
-        return log(itemObject);
+        return handleLog(itemObject);
       }
       case "www.kalunga.com.br": {
         const itemObject = await search.searchKalunga(item, uri);
-        return log(itemObject);
+        return handleLog(itemObject);
+      }
+      case "www.terabyteshop.com.br": {
+        const itemObject = await search.searchTerabyte(item, uri);
+        return handleLog(itemObject);
+      }
+      case "www.lojasrenner.com.br": {
+        const itemObject = await search.searchRenner(item, uri);
+        return handleLog(itemObject);
+      }
+      case "www.riachuelo.com.br": {
+        const itemObject = await search.searchRiachuelo(item, uri);
+        return handleLog(itemObject);
       }
       default:
         console.error("[UNSUPPORTED_URL]:", url);
@@ -38,7 +52,7 @@ function checkURL(item) {
   });
 }
 
-function log(item) {
+function handleLog(item) {
   try {
     const {
       promoPrice,
@@ -51,22 +65,55 @@ function log(item) {
       error,
     } = item;
 
+    // Check for error
     if (error || promoPrice < 0 || normalPrice < 0) {
       const errorString = `[SEARCH_ERROR]: ${name}\nLoja: ${loja}\nErro ao procurar Produto`;
 
       fs.appendFile(
-        "log.txt",
+        `logs/${parser.parseDate(new Date())}.log`,
         "\n" + errorString + "\n",
-        (err) => err && console.log("log.txt", err)
+        (err) => err && console.log("logs.log", err)
       );
 
       return console.log(`\n\x1b[1m\x1b[41m${errorString}\x1b[0m\n`);
     }
 
+    // Check targeted price
     if (promoPrice < targetPrice || normalPrice < targetPrice) {
-      return notify(item);
+      return handleNotify(item);
     }
 
+    // Temporaly store and check price changes
+    let priceChange = "";
+    let counter = 0;
+    config.items.map((product) => {
+      counter += product.uri_array.length;
+    });
+
+    if (TempPricesArray.length < counter) {
+      TempPricesArray.push(item);
+    } else {
+      const oldItem = TempPricesArray.find(
+        (storedItem) => storedItem.name === name && storedItem.loja === loja
+      );
+
+      if (
+        oldItem.promoPrice > promoPrice ||
+        oldItem.normalPrice > normalPrice
+      ) {
+        priceChange = "|| > Preço Diminuiu";
+      }
+      if (
+        oldItem.promoPrice < promoPrice ||
+        oldItem.normalPrice < normalPrice
+      ) {
+        priceChange = "|| < Preço Aumentou";
+      } else {
+        priceChange = "|| = Preço Permaneceu Igual";
+      }
+    }
+
+    // Log checked prices
     const promoString = promoPrice
       ? `\nPreço Promocional: R$${promoPrice}`
       : "";
@@ -80,32 +127,34 @@ function log(item) {
 
     const consoleString = `[${parser.parseTime(
       checkedTime
-    )}]: ${name}\x1b[1m\x1b[47m\x1b[30m\nLoja: ${loja}\x1b[43m${normalString}${promoString}${
+    )}]: ${name} ${priceChange}\x1b[1m\x1b[47m\x1b[30m\nLoja: ${loja}\x1b[43m${normalString}${promoString}${
       disponivelStyle + disponivelString
     }\x1b[0m\n`;
 
     const logString = `\n[${parser.parseTime(
       checkedTime
-    )}]: ${name}\nLoja: ${loja}${disponivelString}${normalString}${promoString}\n`;
+    )}]: ${name} ${priceChange}\nLoja: ${loja}${disponivelString}${normalString}${promoString}\n`;
 
     fs.appendFile(
-      "log.txt",
+      `logs/${parser.parseDate(new Date())}.log`,
       logString,
-      (err) => err && console.log("log.txt", err)
+      (err) => err && console.log("log.log", err)
     );
 
-    console.log(consoleString);
+    return console.log(consoleString);
   } catch (err) {
-    console.log("logging error", err);
+    return console.log("logging error", err);
   }
 }
 
-function notify(item) {
+function handleNotify(item) {
   const { promoPrice, normalPrice, checkedTime, name, loja, uri } = item;
 
+  // Notification Methods
   turnLightsGreen();
   openBrowser(uri);
 
+  // Log the price
   const promoString = promoPrice ? `\nPreço Promocional: R$${promoPrice}` : "";
   const normalString = normalPrice ? `\nPreço Normal: R$${normalPrice}` : "";
 
@@ -114,9 +163,9 @@ function notify(item) {
   )}]: ${name}\nLoja: ${loja}${normalString}${promoString}\nURI: ${uri}`;
 
   fs.appendFile(
-    "GoodPrices.txt",
+    "GoodPrices.log",
     "\n" + logString,
-    (err) => err && console.log("goodPrices.txt", err)
+    (err) => err && console.log("goodPrices.log", err)
   );
 
   return console.log("\x1b[1m\x1b[45m\x1b[37m%s\x1b[0m", logString);
@@ -157,8 +206,3 @@ function main() {
 }
 
 main();
-
-// search.searchKabum(
-//   { name: "Debug Test", targetPrice: 9999 },
-//   config.items[0].uri_array[0]
-// );

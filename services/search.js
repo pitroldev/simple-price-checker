@@ -198,4 +198,121 @@ module.exports = {
       };
     }
   },
+
+  async searchTerabyte(item, uri) {
+    try {
+      const { name, targetPrice } = item;
+
+      const response = await axios.get(uri);
+      const $ = cheerio.load(response.data);
+
+      const itemObject = {
+        loja: "Terabyte",
+        name,
+        uri,
+        checkedTime: new Date(),
+        targetPrice: targetPrice,
+      };
+
+      const indisponivel = !!$("#indisponivel").text();
+      if (indisponivel) {
+        return { ...itemObject, indisponivel };
+      }
+
+      itemObject.promoPrice = parser.parsePrice($("#valVista").text());
+      itemObject.normalPrice = parser.parsePrice($("#valParc").text());
+
+      return itemObject;
+    } catch (err) {
+      return {
+        ...item,
+        loja: "Terabyte",
+        error: true,
+        checkedtime: new Date(),
+        err,
+      };
+    }
+  },
+
+  async searchRenner(item, uri) {
+    try {
+      const { name, targetPrice } = item;
+
+      const regex = /\d+/g;
+
+      const [productId, skuId] = uri.match(regex);
+
+      const APIuri = `https://www.lojasrenner.com.br/rest/model/lrsa/api/CatalogActor/refreshProductPage?skuId=${skuId}&productId=${productId}`;
+
+      const response = await axios.get(APIuri);
+
+      const itemObject = {
+        loja: "Renner",
+        name,
+        uri,
+        checkedTime: new Date(),
+        targetPrice: targetPrice,
+      };
+
+      const indisponivel = !response.data.purchasable;
+      if (indisponivel) {
+        return { ...itemObject, indisponivel };
+      }
+
+      itemObject.promoPrice = response.data.salePrice;
+      itemObject.normalPrice = response.data.listPrice;
+
+      return itemObject;
+    } catch (err) {
+      return {
+        ...item,
+        loja: "Renner",
+        error: true,
+        checkedtime: new Date(),
+        err,
+      };
+    }
+  },
+  async searchRiachuelo(item, uri) {
+    try {
+      const { name, targetPrice } = item;
+
+      const regex = /\d+/g;
+
+      const [skuId] = uri.match(regex);
+
+      const APIuri = `https://www.riachuelo.com.br/elasticsearch/data/products?sku=${skuId}`;
+
+      const response = await axios.get(APIuri);
+
+      const itemObject = {
+        loja: "Riachuelo",
+        name,
+        uri,
+        checkedTime: new Date(),
+        targetPrice: targetPrice,
+      };
+
+      const indisponivel =
+        response.data[0].ch_max_price_0_1 === 0 ||
+        response.data[0].ch_max_price_0_1 === undefined;
+      if (indisponivel) {
+        return { ...itemObject, indisponivel };
+      }
+
+      itemObject.promoPrice = response.data[0].ch_min_price_0_1;
+      itemObject.normalPrice = response.data[0].min_price_0_1;
+
+      console.log("RIACHUELO", itemObject);
+      return itemObject;
+    } catch (err) {
+      return {
+        ...item,
+        loja: "Riachuelo",
+        error: true,
+        checkedtime: new Date(),
+        err,
+      };
+    }
+  },
 };
