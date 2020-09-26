@@ -83,37 +83,8 @@ function handleLog(item) {
       return handleNotify(item);
     }
 
-    // Temporaly store and check price changes
+    // LogString
     let priceChange = "";
-    let counter = 0;
-    config.items.map((product) => {
-      counter += product.uri_array.length;
-    });
-
-    if (TempPricesArray.length < counter) {
-      TempPricesArray.push(item);
-    } else {
-      const oldItem = TempPricesArray.find(
-        (storedItem) => storedItem.name === name && storedItem.loja === loja
-      );
-
-      if (
-        oldItem.promoPrice > promoPrice ||
-        oldItem.normalPrice > normalPrice
-      ) {
-        priceChange = "|| > Preço Diminuiu";
-      }
-      if (
-        oldItem.promoPrice < promoPrice ||
-        oldItem.normalPrice < normalPrice
-      ) {
-        priceChange = "|| < Preço Aumentou";
-      } else {
-        priceChange = "|| = Preço Permaneceu Igual";
-      }
-    }
-
-    // Log checked prices
     const promoString = promoPrice
       ? `\nPreço Promocional: R$${promoPrice}`
       : "";
@@ -125,15 +96,60 @@ function handleLog(item) {
 
     const disponivelStyle = indisponivel ? "\x1b[41m\x1b[37m" : "";
 
+    const logString = `\n[${parser.parseTime(
+      checkedTime
+    )}]: ${name} ${priceChange}\nLoja: ${loja}${disponivelString}${normalString}${promoString}\n`;
+
+    // Temporaly store, check and log price changes
+    let counter = 0;
+    config.items.map((product) => {
+      counter += product.uri_array.length;
+    });
+
+    if (TempPricesArray.length < counter) {
+      TempPricesArray.push(item);
+    } else {
+      const oldItem = TempPricesArray.find(
+        (storedItem) => storedItem.name === name && storedItem.loja === loja
+      );
+      const oldItemIndex = TempPricesArray.findIndex(
+        (storedItem) => storedItem.name === name && storedItem.loja === loja
+      );
+
+      if (
+        oldItem.promoPrice > promoPrice ||
+        oldItem.normalPrice > normalPrice
+      ) {
+        TempPricesArray[oldItemIndex] = item;
+        priceChange = "- Caiu";
+        fs.appendFile(
+          `logs/Price_Changes - ${parser.parseDate(new Date())}.log`,
+          logString,
+          (err) => err && console.log("Price_Changes.log", err)
+        );
+      }
+      if (
+        oldItem.promoPrice < promoPrice ||
+        oldItem.normalPrice < normalPrice
+      ) {
+        TempPricesArray[oldItemIndex] = item;
+        priceChange = "- Subiu";
+        fs.appendFile(
+          `logs/Price_Changes - ${parser.parseDate(new Date())}.log`,
+          logString,
+          (err) => err && console.log("Price_Changes.log", err)
+        );
+      } else {
+        priceChange = "- Permaneceu Igual";
+      }
+    }
+
+    // Log checked prices
     const consoleString = `[${parser.parseTime(
       checkedTime
     )}]: ${name} ${priceChange}\x1b[1m\x1b[47m\x1b[30m\nLoja: ${loja}\x1b[43m${normalString}${promoString}${
       disponivelStyle + disponivelString
     }\x1b[0m\n`;
-
-    const logString = `\n[${parser.parseTime(
-      checkedTime
-    )}]: ${name} ${priceChange}\nLoja: ${loja}${disponivelString}${normalString}${promoString}\n`;
 
     fs.appendFile(
       `logs/${parser.parseDate(new Date())}.log`,
@@ -143,38 +159,45 @@ function handleLog(item) {
 
     return console.log(consoleString);
   } catch (err) {
-    return console.log("logging error", err);
+    return console.log("logging error", item, err);
   }
 }
 
 function handleNotify(item) {
-  const { promoPrice, normalPrice, checkedTime, name, loja, uri } = item;
+  try {
+    const { promoPrice, normalPrice, checkedTime, name, loja, uri } = item;
 
-  // Notification Methods
-  turnLightsGreen();
-  openBrowser(uri);
+    // Notification Methods
+    turnLightsGreen();
+    openBrowser(uri);
 
-  // Log the price
-  const promoString = promoPrice ? `\nPreço Promocional: R$${promoPrice}` : "";
-  const normalString = normalPrice ? `\nPreço Normal: R$${normalPrice}` : "";
+    // Log the price
+    const promoString = promoPrice
+      ? `\nPreço Promocional: R$${promoPrice}`
+      : "";
+    const normalString = normalPrice ? `\nPreço Normal: R$${normalPrice}` : "";
 
-  const logString = `[${parser.parseTime(
-    checkedTime
-  )}]: ${name}\nLoja: ${loja}${normalString}${promoString}\nURI: ${uri}`;
+    const logString = `[${parser.parseTime(
+      checkedTime
+    )}]: ${name}\nLoja: ${loja}${normalString}${promoString}\nURI: ${uri}`;
 
-  fs.appendFile(
-    "GoodPrices.log",
-    "\n" + logString,
-    (err) => err && console.log("goodPrices.log", err)
-  );
+    fs.appendFile(
+      "GoodPrices.log",
+      "\n" + logString,
+      (err) => err && console.log("goodPrices.log", err)
+    );
 
-  return console.log("\x1b[1m\x1b[45m\x1b[37m%s\x1b[0m", logString);
+    return console.log("\x1b[1m\x1b[45m\x1b[37m%s\x1b[0m", logString);
+  } catch (err) {
+    console.log("handleNotify err", err);
+  }
 }
 
 async function turnLightsGreen() {
   try {
     const { yeelightIP, yeelightPort } = config;
     const light = new Yeelight(yeelightIP, yeelightPort);
+    await light.set_power("on");
     await light.set_rgb(65280, "smooth", 100);
     await light.set_bright(100, "smooth", 100);
     return light.exit();
@@ -183,8 +206,17 @@ async function turnLightsGreen() {
   }
 }
 
+function intervalLoop() {
+  try {
+    const { items } = config;
+    for (item of items) checkURL(item);
+  } catch (err) {
+    console.log("intervalLoop", err);
+  }
+}
+
 function main() {
-  const { intervalMinutes, items } = config;
+  const { intervalMinutes } = config;
 
   console.log(
     "\n\x1b[1m",
@@ -198,11 +230,11 @@ function main() {
 
   if (process.env.NODE_ENV) {
     console.log("IN DEBUG MODE");
-    return items.map(checkURL);
+    return intervalLoop();
   }
 
-  items.map(checkURL);
-  return setInterval(() => items.map(checkURL), intervalTime);
+  intervalLoop();
+  return setInterval(intervalLoop, intervalTime);
 }
 
 main();
