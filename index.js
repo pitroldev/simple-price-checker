@@ -124,7 +124,8 @@ function handleLog(item) {
         priceChange = "- Caiu";
         fs.appendFile(
           `logs/Price_Changes - ${parser.parseDate(new Date())}.log`,
-          logString,
+          logString +
+            `\npromoPrice_old: ${oldItem.promoPrice}\nnormalPrice_old: ${oldItem.normalPrice}\n`,
           (err) => err && console.log("Price_Changes.log", err)
         );
       }
@@ -136,7 +137,8 @@ function handleLog(item) {
         priceChange = "- Subiu";
         fs.appendFile(
           `logs/Price_Changes - ${parser.parseDate(new Date())}.log`,
-          logString,
+          logString +
+            `\npromoPrice_old: ${oldItem.promoPrice}\nnormalPrice_old: ${oldItem.normalPrice}\n`,
           (err) => err && console.log("Price_Changes.log", err)
         );
       } else {
