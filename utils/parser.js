@@ -1,10 +1,14 @@
 module.exports = {
   parsePrice(price) {
     try {
-      const regex = /[\d,]+/g;
+      const regex = /[\d,.]+/g;
       const parsedString = regex.exec(price)[0].replace(",", ".");
+      const splittedDot = parsedString.split(".");
+      const cents = "." + splittedDot.pop();
 
-      const floatNumber = parseFloat(parsedString);
+      const parsedStringPrice = splittedDot.join("") + cents;
+
+      const floatNumber = parseFloat(parsedStringPrice);
 
       return floatNumber;
     } catch (err) {

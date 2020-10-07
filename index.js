@@ -184,8 +184,8 @@ function handleNotify(item) {
     )}]: ${name}\nLoja: ${loja}${normalString}${promoString}\nURI: ${uri}`;
 
     fs.appendFile(
-      "GoodPrices.log",
-      "\n" + logString,
+      "logs/GoodPrices.log",
+      "\n" + logString + "\n",
       (err) => err && console.log("goodPrices.log", err)
     );
 
