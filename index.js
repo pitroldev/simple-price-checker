@@ -46,6 +46,10 @@ function checkURL(item) {
         const itemObject = await search.searchRiachuelo(item, uri);
         return handleLog(itemObject);
       }
+      case "www.flexform.com.br": {
+        const itemObject = await search.searchFlexform(item, uri);
+        return handleLog(itemObject);
+      }
       default:
         console.error("[UNSUPPORTED_URL]:", url);
     }

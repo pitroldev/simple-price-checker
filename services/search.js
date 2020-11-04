@@ -315,4 +315,39 @@ module.exports = {
       };
     }
   },
+
+  async searchFlexform(item, uri) {
+    try {
+      const { name, targetPrice } = item;
+
+      const response = await axios.get(uri);
+      const $ = cheerio.load(response.data);
+
+      const itemObject = {
+        loja: "Flexform",
+        name,
+        uri,
+        checkedTime: new Date(),
+        targetPrice: targetPrice,
+      };
+
+      const indisponivel = !$("#buy-button").text();
+      if (indisponivel) {
+        return { ...itemObject, indisponivel };
+      }
+
+      itemObject.promoPrice = parser.parsePrice($(".preco-boleto span").text());
+      itemObject.normalPrice = parser.parsePrice($(".produto-preco").text());
+
+      return itemObject;
+    } catch (err) {
+      return {
+        ...item,
+        loja: "Flexform",
+        error: true,
+        checkedtime: new Date(),
+        err,
+      };
+    }
+  },
 };
